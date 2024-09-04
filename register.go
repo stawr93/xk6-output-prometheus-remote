@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	output.RegisterExtension("xk6-prometheus-rw", func(p output.Params) (output.Output, error) {
+	output.RegisterExtension("xk6-prometheus-rw-forked", func(p output.Params) (output.Output, error) {
 		return remotewrite.New(p)
 	})
 }
