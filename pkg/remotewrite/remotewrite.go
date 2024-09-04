@@ -43,6 +43,8 @@ func New(params output.Params) (*Output, error) {
 		return nil, err
 	}
 
+	logger.WithField("ignored metrics", strings.Join(config.IgnoreMetrics, ", ")).Debug("Ignored metrics are")
+
 	clientConfig, err := config.RemoteConfig()
 	if err != nil {
 		return nil, err
@@ -251,7 +253,7 @@ func (o *Output) convertToPbSeries(samplesContainers []metrics.SampleContainer) 
 
 		for _, sample := range samples {
 			if o.ignoreSample(sample) {
-				o.logger.WithField("metric", sample.Metric.Name).Info("metric ignored")
+				o.logger.WithField("metric", sample.Metric.Name).Debug("metric ignored")
 				continue
 			}
 
