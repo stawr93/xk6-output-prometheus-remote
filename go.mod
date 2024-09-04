@@ -1,4 +1,4 @@
-module github.com/grafana/xk6-output-prometheus-remote
+module github.com/stawr93/xk6-output-prometheus-remote
 
 go 1.20
 

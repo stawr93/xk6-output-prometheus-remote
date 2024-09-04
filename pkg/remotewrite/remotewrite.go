@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/grafana/xk6-output-prometheus-remote/pkg/remote"
-	"github.com/grafana/xk6-output-prometheus-remote/pkg/stale"
+	"github.com/stawr93/xk6-output-prometheus-remote/pkg/remote"
+	"github.com/stawr93/xk6-output-prometheus-remote/pkg/stale"
 
 	"go.k6.io/k6/metrics"
 	"go.k6.io/k6/output"
@@ -250,6 +250,11 @@ func (o *Output) convertToPbSeries(samplesContainers []metrics.SampleContainer) 
 		samples := samplesContainer.GetSamples()
 
 		for _, sample := range samples {
+			if o.ignoreSample(sample) {
+				o.logger.WithField("metric", sample.Metric.Name).Info("metric ignored")
+				continue
+			}
+
 			truncTime := sample.Time.Truncate(time.Millisecond)
 			swm, ok := o.tsdb[sample.TimeSeries]
 			if !ok {
@@ -296,6 +301,16 @@ func (o *Output) convertToPbSeries(samplesContainers []metrics.SampleContainer) 
 		pbseries = append(pbseries, o.tsdb[s].MapPrompb()...)
 	}
 	return pbseries
+}
+
+func (o *Output) ignoreSample(sample metrics.Sample) bool {
+	for _, ignoreMetricPrefix := range o.config.IgnoreMetrics {
+		if strings.HasPrefix(sample.Metric.Name, ignoreMetricPrefix) {
+			return true
+		}
+	}
+
+	return false
 }
 
 type seriesWithMeasure struct {

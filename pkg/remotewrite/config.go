@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/grafana/xk6-output-prometheus-remote/pkg/remote"
+	"github.com/stawr93/xk6-output-prometheus-remote/pkg/remote"
 	"go.k6.io/k6/lib/types"
 	"gopkg.in/guregu/null.v3"
 )
@@ -68,6 +68,8 @@ type Config struct {
 	TrendStats []string `json:"trendStats"`
 
 	StaleMarkers null.Bool `json:"staleMarkers"`
+
+	IgnoreMetrics []string `json:"ignoreMetrics"`
 }
 
 // NewConfig creates an Output's configuration.
@@ -178,6 +180,11 @@ func (conf Config) Apply(applied Config) Config {
 
 	if applied.ClientCertificateKey.Valid {
 		conf.ClientCertificateKey = applied.ClientCertificateKey
+	}
+
+	if len(applied.IgnoreMetrics) > 0 {
+		conf.IgnoreMetrics = make([]string, len(applied.IgnoreMetrics))
+		copy(conf.IgnoreMetrics, applied.IgnoreMetrics)
 	}
 
 	return conf
@@ -313,6 +320,10 @@ func parseEnvs(env map[string]string) (Config, error) {
 
 	if trendStats, trendStatsDefined := env["K6_PROMETHEUS_RW_TREND_STATS"]; trendStatsDefined {
 		c.TrendStats = strings.Split(trendStats, ",")
+	}
+
+	if ignoreMetrics, ignoreMetricsDefined := env["K6_PROMETHEUS_IGNORE_METRICS"]; ignoreMetricsDefined {
+		c.IgnoreMetrics = strings.Split(ignoreMetrics, ",")
 	}
 
 	return c, nil
